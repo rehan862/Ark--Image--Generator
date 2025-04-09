@@ -5,22 +5,52 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ark Image Generator</title>
   <style>
+    :root {
+      --bg: #111;
+      --text: #fff;
+      --accent: #00f5d4;
+      --card: #222;
+    }
+    [data-theme="light"] {
+      --bg: #f2f2f2;
+      --text: #111;
+      --accent: #00796b;
+      --card: #fff;
+    }
+
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
-      background: #111;
-      color: #fff;
+      background: var(--bg);
+      color: var(--text);
       overflow-x: hidden;
+      transition: 0.3s;
     }
+
     header {
-      background: #1f1f1f;
+      background: var(--card);
       padding: 1rem;
       text-align: center;
       font-size: 1.5rem;
       font-weight: bold;
       letter-spacing: 1px;
-      color: #00f5d4;
+      color: var(--accent);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
+
+    #toggle-theme {
+      background: transparent;
+      border: 2px solid var(--accent);
+      color: var(--accent);
+      border-radius: 5px;
+      padding: 5px 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      margin-right: 10px;
+    }
+
     #random-images {
       display: flex;
       flex-wrap: wrap;
@@ -28,39 +58,44 @@
       gap: 10px;
       padding: 20px;
     }
+
     .random-img {
       width: 100px;
       height: 100px;
       object-fit: cover;
       border-radius: 8px;
     }
+
     #generator {
-      display: none;
       padding: 20px;
-      background: #222;
+      background: var(--card);
     }
+
     textarea, select {
       width: 100%;
       padding: 10px;
       border: 1px solid #555;
-      background: #111;
-      color: #fff;
+      background: var(--bg);
+      color: var(--text);
       border-radius: 5px;
       margin-bottom: 10px;
     }
+
     button {
       padding: 10px 20px;
-      border: 2px solid #00f5d4;
+      border: 2px solid var(--accent);
       background: transparent;
-      color: #00f5d4;
+      color: var(--accent);
       border-radius: 5px;
       cursor: pointer;
       transition: 0.3s;
     }
+
     button:hover {
-      background: #00f5d4;
-      color: #000;
+      background: var(--accent);
+      color: var(--bg);
     }
+
     #images {
       display: flex;
       flex-wrap: wrap;
@@ -68,83 +103,53 @@
       justify-content: center;
       margin-top: 20px;
     }
+
     .generated-image {
       max-width: 200px;
       border: 1px solid #333;
       border-radius: 10px;
+      display: block;
+      margin-bottom: 10px;
     }
+
     #history {
       margin-top: 20px;
     }
+
     .history-item {
-      background: #1a1a1a;
+      background: var(--bg);
       padding: 8px;
       margin-bottom: 5px;
-      border-left: 4px solid #00f5d4;
+      border-left: 4px solid var(--accent);
     }
-    #plus-button {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      font-size: 30px;
-      background: #00f5d4;
-      color: #000;
-      border: none;
+
+    .loader {
+      display: none;
+      margin: 20px auto;
+      border: 5px solid #ccc;
+      border-top: 5px solid var(--accent);
       border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      box-shadow: 0 0 10px #00f5d4;
-      cursor: pointer;
-      transition: 0.3s ease;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
     }
-    #plus-button:hover {
-      transform: scale(1.1);
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
     }
-    .pricing {
-      background: #1f1f1f;
-      padding: 40px 20px;
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-    .plan {
-      background: #222;
-      border: 1px solid #444;
-      border-radius: 10px;
-      padding: 20px;
-      width: 280px;
-      text-align: center;
-    }
-    .plan h3 {
-      margin: 0;
-      color: #00f5d4;
-    }
-    .plan ul {
-      list-style: none;
-      padding: 0;
-      margin: 15px 0;
-    }
-    .plan ul li {
-      margin: 8px 0;
-    }
-    .upi-box {
-      background: #111;
-      padding: 10px;
-      margin-top: 10px;
-      border-radius: 5px;
-      font-size: 14px;
-    }
+
     @media(max-width: 600px){
-      .plan {
-        width: 90%;
-      }
+      header { flex-direction: column; gap: 10px; }
     }
   </style>
 </head>
-<body>
+<body data-theme="dark">
 
-<header>Ark Image Generator</header>
+<header>
+  <span>Ark Image Generator</span>
+  <button id="toggle-theme" onclick="toggleTheme()">Light Mode</button>
+</header>
 
 <div id="random-images">
   <img src="https://picsum.photos/100?1" class="random-img" />
@@ -163,61 +168,41 @@
     <option value="watercolor">Watercolor</option>
   </select>
   <button onclick="generateImage()">Generate</button>
+  <div class="loader" id="loader"></div>
   <div id="images"></div>
   <div id="history"></div>
 </div>
 
-<button id="plus-button" onclick="toggleGenerator()">+</button>
-
-<div class="pricing">
-  <div class="plan">
-    <h3>Free</h3>
-    <ul>
-      <li>10 Images/Day</li>
-      <li>Basic Styles</li>
-      <li>Watermarked</li>
-    </ul>
-  </div>
-  <div class="plan">
-    <h3>Pro - ₹99/month</h3>
-    <ul>
-      <li>100 Images/Day</li>
-      <li>High-Res</li>
-      <li>No Watermark</li>
-    </ul>
-    <button onclick="showUPI(this)">Pay via UPI</button>
-    <div class="upi-box" style="display:none;">Send ₹99 to: <strong>rehanajmali@ybl</strong></div>
-  </div>
-  <div class="plan">
-    <h3>Ultimate - ₹299/month</h3>
-    <ul>
-      <li>Unlimited Images</li>
-      <li>All Styles</li>
-      <li>Priority Access</li>
-    </ul>
-    <button onclick="showUPI(this)">Pay via UPI</button>
-    <div class="upi-box" style="display:none;">Send ₹299 to: <strong>rehanajmali@ybl</strong></div>
-  </div>
-</div>
-
 <script>
-function toggleGenerator() {
-  const gen = document.getElementById('generator');
-  gen.style.display = gen.style.display === 'none' ? 'block' : 'none';
+function toggleTheme() {
+  const body = document.body;
+  const isDark = body.getAttribute("data-theme") === "dark";
+  body.setAttribute("data-theme", isDark ? "light" : "dark");
+  document.getElementById("toggle-theme").innerText = isDark ? "Dark Mode" : "Light Mode";
 }
 
 function generateImage() {
-  const prompt = document.getElementById('prompt').value + ' ' + document.getElementById('style').value;
-  fetch("https://api-inference.huggingface.co/models/CompVis/stable-diffusion-v1-4", {
+  const promptText = document.getElementById('prompt').value + ' ' + document.getElementById('style').value;
+  if (!promptText.trim()) return alert("Please enter a prompt.");
+
+  const loader = document.getElementById('loader');
+  loader.style.display = 'block';
+
+  fetch("https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2-1", {
     method: "POST",
     headers: {
       Authorization: "Bearer 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",
       "Content-Type": "application/json"
     },
-    body: JSON.stringify({ inputs: prompt })
+    body: JSON.stringify({ inputs: promptText })
   })
-  .then(res => res.blob())
+  .then(res => {
+    if (!res.ok) throw new Error("Image generation failed.");
+    return res.blob();
+  })
   .then(blob => {
+    loader.style.display = 'none';
+
     const url = URL.createObjectURL(blob);
     const img = document.createElement('img');
     img.src = url;
@@ -235,21 +220,20 @@ function generateImage() {
     const container = document.createElement('div');
     container.appendChild(img);
     container.appendChild(downloadBtn);
-
     document.getElementById('images').appendChild(container);
 
     const historyItem = document.createElement('div');
     historyItem.className = 'history-item';
-    historyItem.innerText = prompt;
+    historyItem.innerText = promptText;
     document.getElementById('history').appendChild(historyItem);
+  })
+  .catch(err => {
+    loader.style.display = 'none';
+    alert("Error: " + err.message);
   });
-}
-
-function showUPI(button) {
-  const box = button.nextElementSibling;
-  box.style.display = box.style.display === 'none' ? 'block' : 'none';
 }
 </script>
 
 </body>
-</html>
+    </html>
+  
